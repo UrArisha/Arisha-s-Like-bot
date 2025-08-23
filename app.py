@@ -233,8 +233,8 @@ def handle_requests():
 @app.route("/", methods=["GET"])
 def home():
     return jsonify({
-        "credits": "Dev By jami",
-        "discord": "https://discord.gg/b7XQpYeK2F"
+        "credits": "Dev By Rohan khan",
+        "discord": "
     })
 if __name__ == '__main__':
     
