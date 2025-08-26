@@ -1,49 +1,32 @@
-import base64
-import json
-import requests
 import os
+import json
+import base64
+import requests
 from http.server import BaseHTTPRequestHandler
 
-GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN")
-REPO = "your-username/your-repo"   # নিজের repo নাম
-FILE_PATH = "token_bd.json"        # main/root এ টার্গেট ফাইল
+# ==========================
+# Config
+# ==========================
+GITHUB_TOKEN = "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"  # Temporary token
+REPO = "UrArisha/Arisha-s-Like-bot"
+FILE_PATH = "token_bd.json"
+BRANCH = "main"
 
 class handler(BaseHTTPRequestHandler):
     def do_POST(self):
-        content_type = self.headers.get('Content-Type', '')
-
-        if "multipart/form-data" in content_type:
-            boundary = content_type.split("boundary=")[1]
-            length = int(self.headers['Content-Length'])
-            body = self.rfile.read(length)
-
-            parts = body.split(b"--" + boundary.encode())
-            file_content = None
-            for part in parts:
-                if b"Content-Disposition" in part and b"filename=" in part:
-                    file_content = part.split(b"\r\n\r\n", 1)[1].rsplit(b"\r\n", 1)[0]
-                    break
-
-            if not file_content:
-                self.send_response(400)
-                self.end_headers()
-                self.wfile.write(b'{"error":"No file uploaded"}')
-                return
-
-            try:
-                new_data = json.loads(file_content.decode())
-            except:
-                self.send_response(400)
-                self.end_headers()
-                self.wfile.write(b'{"error":"Invalid JSON file"}')
-                return
-
-        else:
-            length = int(self.headers['Content-Length'])
-            body = self.rfile.read(length).decode("utf-8")
+        # Read incoming JSON body
+        length = int(self.headers['Content-Length'])
+        body = self.rfile.read(length)
+        try:
             new_data = json.loads(body)
+        except:
+            self.send_response(400)
+            self.end_headers()
+            self.wfile.write(b'{"error":"Invalid JSON"}')
+            return
 
-        url = f"https://api.github.com/repos/{REPO}/contents/{FILE_PATH}"
+        # Get existing file info from GitHub
+        url = f"https://api.github.com/repos/{REPO}/contents/{FILE_PATH}?ref={BRANCH}"
         headers = {"Authorization": f"token {GITHUB_TOKEN}"}
         r = requests.get(url, headers=headers).json()
 
@@ -56,10 +39,12 @@ class handler(BaseHTTPRequestHandler):
         sha = r["sha"]
         content = base64.b64encode(json.dumps(new_data, indent=2).encode()).decode()
 
+        # Update file on GitHub
         update_data = {
-            "message": "API upload JSON file",
+            "message": "API update JSON file",
             "content": content,
-            "sha": sha
+            "sha": sha,
+            "branch": BRANCH
         }
 
         res = requests.put(url, headers=headers, data=json.dumps(update_data))
