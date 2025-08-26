@@ -1,16 +1,27 @@
 {
-    "version":2,
+    "version": 2,
     "builds": [
         {
-            "src":"./index.py",
+            "src": "./index.py",
             "use": "@vercel/python",
-            "config":{"runtime":"python3.8"}
+            "config": { "runtime": "python3.8" }
+        },
+        {
+            "src": "autojwt/*.py",
+            "use": "@vercel/python",
+            "config": { "runtime": "python3.9" }
         }
     ],
     "routes": [
         {
-            "src":"/(.*)",
-            "dest":"/"
+            "src": "/autojwt/(.*)",
+            "dest": "/autojwt/$1"
+        },
+        {
+            "src": "/(.*)",
+            "dest": "/"
         }
     ]
 }
+
+Eta ki hobe
