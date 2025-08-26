@@ -23,7 +23,7 @@ def load_tokens(server_name):
             with open("token_br.json", "r") as f:
                 tokens = json.load(f)
         else:
-            with open("bd.json", "r") as f:
+            with open("token_bd.json", "r") as f:
                 tokens = json.load(f)
         return tokens
     except Exception as e:
