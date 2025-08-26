@@ -1,25 +1,16 @@
 {
-    "version": 2,
+    "version":2,
     "builds": [
         {
-            "src": "./index.py",
+            "src":"./index.py",
             "use": "@vercel/python",
-            "config": { "runtime": "python3.8" }
-        },
-        {
-            "src": "autojwt/*.py",
-            "use": "@vercel/python",
-            "config": { "runtime": "python3.9" }
+            "config":{"runtime":"python3.8"}
         }
     ],
     "routes": [
         {
-            "src": "/autojwt/(.*)",
-            "dest": "/autojwt/$1"
-        },
-        {
-            "src": "/(.*)",
-            "dest": "/"
+            "src":"/(.*)",
+            "dest":"/"
         }
     ]
 }
