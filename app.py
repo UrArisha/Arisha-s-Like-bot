@@ -230,10 +230,15 @@ def handle_requests():
     except Exception as e:
         app.logger.error(f"Error processing request: {e}")
         return jsonify({"error": str(e)}), 500
-
 @app.route("/", methods=["GET"])
 def home():
     return jsonify({
         "credits": "Done By Rifat",
         "discord": "https://discord.gg/b7XQpYeK2F"
     })
+if __name__ == '__main__':
+    
+    app.run(debug=True, use_reloader=False)
+
+
+Full code den jeno kaj ar onno kicu change korben na
