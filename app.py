@@ -7,9 +7,9 @@ import binascii
 import aiohttp
 import requests
 import json
-import like_pb2
-import like_count_pb2
-import uid_generator_pb2
+from proto import like_pb2  # If your folder is named "Proto"
+from proto import like_count_pb2
+from proto import uid_generator_pb2
 from google.protobuf.message import DecodeError
 
 app = Flask(__name__)
@@ -92,7 +92,7 @@ async def send_multiple_requests(uid, server_name, url):
         if tokens is None:
             app.logger.error("Failed to load tokens.")
             return None
-        for i in range(2000):
+        for i in range(2):
             token = tokens[i % len(tokens)]["token"]
             tasks.append(send_request(encrypted_uid, token, url))
         results = await asyncio.gather(*tasks, return_exceptions=True)
@@ -161,25 +161,6 @@ def decode_protobuf(binary):
         app.logger.error(f"Unexpected error during protobuf decoding: {e}")
         return None
 
-def fetch_player_info(uid):
-    try:
-        url = f"https://nr-codex-info.vercel.app/get?uid={uid}"
-        response = requests.get(url, timeout=5)
-        if response.status_code == 200:
-            data = response.json()
-            account_info = data.get("AccountInfo", {})
-            return {
-                "Level": account_info.get("AccountLevel", "NA"),
-                "Region": account_info.get("AccountRegion", "NA"),
-                "ReleaseVersion": account_info.get("ReleaseVersion", "NA")
-            }
-        else:
-            app.logger.error(f"Player info API failed with status code: {response.status_code}")
-            return {"Level": "NA", "Region": "NA", "ReleaseVersion": "NA"}
-    except Exception as e:
-        app.logger.error(f"Error fetching player info from API: {e}")
-        return {"Level": "NA", "Region": "NA", "ReleaseVersion": "NA"}
-
 @app.route('/like', methods=['GET'])
 def handle_requests():
     uid = request.args.get("uid")
@@ -189,20 +170,7 @@ def handle_requests():
 
     try:
         def process_request():
-            # Fetch player info from the new API
-            player_info = fetch_player_info(uid)
-            region = player_info["Region"]
-            level = player_info["Level"]
-            release_version = player_info["ReleaseVersion"]
-
-            # Validate server_name against region from API
-            if region != "NA" and server_name != region:
-                app.logger.warning(f"Server name {server_name} does not match API region {region}. Using API region.")
-                server_name_used = region
-            else:
-                server_name_used = server_name
-
-            tokens = load_tokens(server_name_used)
+            tokens = load_tokens(server_name)
             if tokens is None:
                 raise Exception("Failed to load tokens.")
             token = tokens[0]['token']
@@ -210,7 +178,7 @@ def handle_requests():
             if encrypted_uid is None:
                 raise Exception("Encryption of UID failed.")
 
-            before = make_request(encrypted_uid, server_name_used, token)
+            before = make_request(encrypted_uid, server_name, token)
             if before is None:
                 raise Exception("Failed to retrieve initial player info.")
             try:
@@ -225,16 +193,16 @@ def handle_requests():
                 before_like = 0
             app.logger.info(f"Likes before command: {before_like}")
 
-            if server_name_used == "IND":
+            if server_name == "IND":
                 url = "https://client.ind.freefiremobile.com/LikeProfile"
-            elif server_name_used in {"BR", "US", "SAC", "NA"}:
+            elif server_name in {"BR", "US", "SAC", "NA"}:
                 url = "https://client.us.freefiremobile.com/LikeProfile"
             else:
                 url = "https://clientbp.ggblueshark.com/LikeProfile"
 
-            asyncio.run(send_multiple_requests(uid, server_name_used, url))
+            asyncio.run(send_multiple_requests(uid, server_name, url))
 
-            after = make_request(encrypted_uid, server_name_used, token)
+            after = make_request(encrypted_uid, server_name, token)
             if after is None:
                 raise Exception("Failed to retrieve player info after like requests.")
             try:
@@ -249,13 +217,10 @@ def handle_requests():
             status = 1 if like_given != 0 else 2
             result = {
                 "LikesGivenByAPI": like_given,
-                "LikesafterCommand": after_like,
                 "LikesbeforeCommand": before_like,
+                "LikesafterCommand": after_like,
                 "PlayerNickname": player_name,
-                "Region": region,
-                "Level": level,
                 "UID": player_uid,
-                "ReleaseVersion": release_version,
                 "status": status
             }
             return result
@@ -265,6 +230,12 @@ def handle_requests():
     except Exception as e:
         app.logger.error(f"Error processing request: {e}")
         return jsonify({"error": str(e)}), 500
-
+@app.route("/", methods=["GET"])
+def home():
+    return jsonify({
+        "credits": "powerd by rohan",
+        "Telegram like bot username": "@profilelikeff"
+    })
 if __name__ == '__main__':
+    
     app.run(debug=True, use_reloader=False)
