@@ -53,7 +53,7 @@ async def send_request(encrypted_uid, token, url):
         'Expect': "100-continue",
         'X-Unity-Version': "2018.4.11f1",
         'X-GA': "v1 1",
-        'ReleaseVersion': "OB49"
+        'ReleaseVersion': "OB50"
     }
     async with aiohttp.ClientSession() as session:
         async with session.post(url, data=edata, headers=headers) as response:
@@ -68,7 +68,7 @@ async def send_multiple_requests(uid, server_name, url):
     
     tasks = []
     tokens = load_tokens(server_name)
-    for i in range(100):
+    for i in range(3000):
         token = tokens[i % len(tokens)]["token"]
         tasks.append(send_request(encrypted_uid, token, url))
     
@@ -105,7 +105,7 @@ def make_request(encrypt, server_name, token):
         'Expect': "100-continue",
         'X-Unity-Version': "2018.4.11f1",
         'X-GA': "v1 1",
-        'ReleaseVersion': "OB49"
+        'ReleaseVersion': "OB50"
     }
 
     response = requests.post(url, data=edata, headers=headers, verify=False)
