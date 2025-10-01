@@ -61,7 +61,7 @@ async def send_request(encrypted_uid, token, url):
             'Accept-Encoding': "gzip",
             'Authorization': f"Bearer {token}",
             'Content-Type': "application/x-www-form-urlencoded",
-            'Expect': 100-continue",
+            'Expect': "100-continue",
             'X-Unity-Version': "2018.4.11f1",
             'X-GA': "v1 1",
             'ReleaseVersion': "OB50"
@@ -92,7 +92,7 @@ async def send_multiple_requests(uid, server_name, url):
         if tokens is None:
             app.logger.error("Failed to load tokens.")
             return None
-        for i in range(10000):
+        for i in range(2):
             token = tokens[i % len(tokens)]["token"]
             tasks.append(send_request(encrypted_uid, token, url))
         results = await asyncio.gather(*tasks, return_exceptions=True)
@@ -133,7 +133,7 @@ def make_request(encrypt, server_name, token):
             'Accept-Encoding': "gzip",
             'Authorization': f"Bearer {token}",
             'Content-Type': "application/x-www-form-urlencoded",
-            'Expect': 100-continue",
+            'Expect': "100-continue",
             'X-Unity-Version': "2018.4.11f1",
             'X-GA': "v1 1",
             'ReleaseVersion': "OB50"
