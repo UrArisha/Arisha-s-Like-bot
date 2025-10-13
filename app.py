@@ -59,7 +59,7 @@ from datetime import datetime
 app = Flask(__name__)
 
 # ✅ Per-key rate limit setup
-KEY_LIMIT = 150
+KEY_LIMIT = 150000
 token_tracker = defaultdict(lambda: [0, time.time()])  # token: [count, last_reset_time]
 
 def get_today_midnight_timestamp():
