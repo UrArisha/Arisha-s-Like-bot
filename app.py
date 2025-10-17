@@ -234,7 +234,7 @@ def handle_requests():
 def home():
     return jsonify({
         "credits": "powerd by rohan",
-        "Telegram like bot username": "@profilelikeff"
+        "Telegram like bot username.": "@profilelikeff"
     })
 if __name__ == '__main__':
     
