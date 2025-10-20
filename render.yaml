@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: my-python-app
+    env: python
+    plan: free           # চাইলে starter, standard ইত্যাদি দিতে পারো
+    buildCommand: ""
+    startCommand: python index.py
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.8
+    autoDeploy: true
